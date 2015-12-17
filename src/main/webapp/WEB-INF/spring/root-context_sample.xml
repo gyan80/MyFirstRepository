@@ -1,0 +1,76 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd">
+
+	<context:annotation-config />
+
+	<context:component-scan base-package="com.kiwi.spring" />
+
+	<!-- Properties files -->
+	<beans:bean id="autoReloadingStrategy"
+		class="org.apache.commons.configuration.reloading.FileChangedReloadingStrategy" />
+
+	<beans:bean id="properties"
+		class="org.apache.commons.configuration.PropertiesConfiguration">
+		<beans:property name="reloadingStrategy" ref="autoReloadingStrategy" />
+		<beans:constructor-arg value="app.properties" />
+	</beans:bean>
+
+	<beans:bean class="com.kiwi.spring.config.Configuration">
+		<beans:property name="properties" ref="properties" />
+	</beans:bean>
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources 
+		in the /WEB-INF/views directory -->
+	<beans:bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+
+	<!-- Hibernate Transaction Manager -->
+	<beans:bean id="transactionManager"
+		class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+		<beans:property name="sessionFactory" ref="mySessionFactory" />
+	</beans:bean>
+
+	<!-- Hibernate Session Factory -->
+	<beans:bean id="mySessionFactory"
+		class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+		<beans:property name="dataSource" ref="mySQL" />
+		<beans:property name="packagesToScan">
+			<beans:array>
+				<beans:value>com.kiwi.spring</beans:value>
+			</beans:array>
+		</beans:property>
+		<beans:property name="hibernateProperties">
+			<beans:value>
+				hibernate.dialect=org.hibernate.spatial.dialect.mysql.MySQLSpatialDialect
+			</beans:value>
+		</beans:property>
+	</beans:bean>
+
+	<beans:bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+
+		<!-- one of the properties available; the maximum file size in bytes -->
+		<beans:property name="maxUploadSize" value="100000000" />
+	</beans:bean>
+
+	<!-- Activates annotation based transaction management -->
+	<tx:annotation-driven transaction-manager="transactionManager"
+		proxy-target-class="true" />
+
+	<!-- Root Context: defines shared resources visible to all other web components -->
+		<beans:bean id="mySQL" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+			<beans:property name="driverClassName" value="com.mysql.jdbc.Driver" />
+			<beans:property name="url" value="jdbc:mysql://senserydb.cxcmxe5fqg5p.us-east-1.rds.amazonaws.com:3306/production" />
+			<beans:property name="username" value="senseryuser" />
+			<beans:property name="password" value="sEnsery14" />
+			<beans:property name="validationQuery" value="SELECT 1" />
+		</beans:bean>
+</beans>
